@@ -35,8 +35,19 @@ instance_type_allowed = rule {
     }
 }
 
+# Rule to restrict allowed regions
+allowed_regions = ["us-east-1", "us-west-2"]
+regions_allowed = rule {
+    all tfconfig.module_calls as _, mc {
+        all mc.resources.aws_instance as _, instance {
+            instance.config.ami is not null and
+            instance.provider_config.region in allowed_regions
+        }
+    }
+}
+
 # Main rule that requires other rules to be true
 main = rule {
-    (instance_type_allowed and mandatory_instance_tags) else true
+    (instance_type_allowed and mandatory_instance_tags and regions_allowed) else true
 }
 
